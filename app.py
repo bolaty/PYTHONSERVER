@@ -23,7 +23,7 @@ CORS(app)
 # Exemple de route pour tester la connexion à la base de données
 
 @app.route('/')
-def index():
+def hello():
     #global db_connection
     
     #cursor = db_connection.cursor()
