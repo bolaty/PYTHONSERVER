@@ -14,6 +14,7 @@ import uuid
 import sys
 sys.path.append("../")
 from config import MYSQL_REPONSE,LIENAPISMS
+import threading
 
 class clsMouvementcomptable:
     def __init__(self):
@@ -810,8 +811,97 @@ def recup_info_apisms_clientpiece(connection, co_codeoperateur):
     except Exception as e:
         MYSQL_REPONSE = str(e.args[1])
         raise Exception(MYSQL_REPONSE)
+    
+    
+def traitement_asynchrone(connection, clsMouvementcomptable, listOperation):
+    try:
+         # Votre traitement asynchrone ici
+            for idx in range(len(listOperation)):
+                        vlpEnvoyerSms = pvgDecisionEnvoiSMS(connection, clsMouvementcomptable['AG_CODEAGENCE'])
+                        if vlpEnvoyerSms:
+                            clsParametreAppelApi = {}
+                            clsParametreAppelApi['AG_CODEAGENCE'] = clsMouvementcomptable['AG_CODEAGENCE']
+                            clsParametreAppelApi['PV_CODEPOINTVENTE'] = clsMouvementcomptable['PV_CODEPOINTVENTE']
+                            clsParametreAppelApi['CL_CODECLIENT'] = listOperation[idx]["CL_CODECLIENT"]
+                            clsParametreAppelApi['CL_IDCLIENT'] = listOperation[idx]["CL_IDCLIENT"]
+                            clsParametreAppelApi['CO_CODECOMPTE'] = clsMouvementcomptable['CO_CODECOMPTE']
+                            clsParametreAppelApi['OB_NOMOBJET'] = "FrmOperationGuichetTiersEpargnantJournalier"
+                            clsParametreAppelApi['CL_CONTACT'] = listOperation[idx]["EJ_TELEPHONE"]
+                            clsParametreAppelApi['OP_CODEOPERATEUR'] = clsMouvementcomptable['OP_CODEOPERATEUR']
+                            clsParametreAppelApi['SM_DATEPIECE'] = str(clsMouvementcomptable['MC_DATEPIECE'])
+                            clsParametreAppelApi['SL_MESSAGECLIENT'] = listOperation[idx]["SL_MESSAGECLIENT"]
+                            clsParametreAppelApi['SM_NUMSEQUENCE'] = listOperation[idx]["SM_NUMSEQUENCERETOURS"]
+                            clsParametreAppelApi['AG_EMAIL'] = listOperation[idx]["AG_EMAIL"]
+                            clsParametreAppelApi['AG_EMAILMOTDEPASSE'] = listOperation[idx]["AG_EMAILMOTDEPASSE"]
+                            clsParametreAppelApi['SL_MESSAGEOBJET'] = listOperation[idx]["SL_MESSAGEOBJET"]
+                            clsParametreAppelApi['EJ_EMAILCLIENT'] = listOperation[idx]["EJ_EMAILCLIENT"]
+                            clsParametreAppelApi['SL_LIBELLE1'] = ""
+                            clsParametreAppelApi['SL_LIBELLE2'] = ""
+                            clsParametreAppelApis = [clsParametreAppelApi]
+
+                            TE_CODESMSTYPEOPERATION = "0005"
+                            SL_LIBELLE1 = "C"
+                            SL_LIBELLE2 = ""
+                            clsParametreAppelApi['SL_LIBELLE1'] = SL_LIBELLE1
+                            clsParams = pvgTraitementSms(
+                                connection,
+                                clsParametreAppelApi['AG_CODEAGENCE'],
+                                clsParametreAppelApi['PV_CODEPOINTVENTE'],
+                                clsParametreAppelApi['CO_CODECOMPTE'],
+                                clsParametreAppelApi['OB_NOMOBJET'],
+                                "2250788635251",#clsParametreAppelApi['CL_CONTACT'],
+                                clsParametreAppelApi['OP_CODEOPERATEUR'],
+                                clsParametreAppelApi['SM_DATEPIECE'],
+                                "",
+                                clsParametreAppelApi['CL_IDCLIENT'],
+                                "",
+                                clsParametreAppelApi['SL_MESSAGECLIENT'],
+                                TE_CODESMSTYPEOPERATION,
+                                "0",
+                                "01/01/1900",
+                                "0",
+                                "0",
+                                "N",
+                                "0",
+                                clsParametreAppelApi['SL_LIBELLE1'],
+                                clsParametreAppelApi['SL_LIBELLE2']
+                            )
+
+                            clsParametreAppelApis[0]['SL_RESULTATAPI'] = clsParams['SL_RESULTAT']
+                            clsParametreAppelApis[0]['SL_MESSAGEAPI'] = clsParams['SL_MESSAGE']
+                            if clsParams['SL_RESULTAT'] == "FALSE":
+                                clsParametreAppelApis[0]['SL_MESSAGE'] = clsParametreAppelApis[0]['SL_MESSAGE'] + " " + clsParametreAppelApis[0]['SL_MESSAGEAPI']
+                            if clsParams['SL_RESULTAT'] == "TRUE":
+                                clsParametreAppelApis[0]['SL_MESSAGEAPI'] = ""
+
+                            if "@" in clsParametreAppelApis[0]['EJ_EMAILCLIENT']:
+                                smtpServeur = "smtp.gmail.com"
+                                portSmtp = 587
+                                adresseEmail = clsParametreAppelApis[0]['AG_EMAIL']
+                                motDePasse = clsParametreAppelApis[0]['AG_EMAILMOTDEPASSE']
+                                destinataire = 'bolatykouassieuloge@gmail.com'#clsParametreAppelApis[0]['EJ_EMAILCLIENT']
+                                sujet = "Code Validation"
+                                corpsMessage = clsParametreAppelApis[0]['SL_MESSAGECLIENT']
+                                message = MIMEMultipart()
+                                message['From'] = adresseEmail
+                                message['To'] = destinataire
+                                message['Subject'] = sujet
+                                message.attach(MIMEText(corpsMessage, 'plain'))
+                                with smtplib.SMTP(smtpServeur, portSmtp) as server:
+                                    server.starttls()
+                                    server.login(adresseEmail, motDePasse)
+                                    server.sendmail(adresseEmail, destinataire, message.as_string())
+            connection.close() 
+            pass
+          
+    except Exception as e:
+        print("Erreur lors du traitement asynchrone:", e)
+
+
+    
 def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletages, clsObjetEnvoi):
         try:
+            listOperation = []
             IsNetworkConnected()
             pvgTestJournee(connection, clsObjetEnvoi)
             vlpNumPiece = pvgNumeroPiece(connection, clsMouvementcomptables[0]['AG_CODEAGENCE'], str(clsMouvementcomptables[0]['MC_DATEPIECE']),clsMouvementcomptables[0]['OP_CODEOPERATEUR'],"MOUVEMENTCOMPTABLE")
@@ -833,7 +923,9 @@ def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletag
                 
                 # Vérifier si la première instruction s'est terminée avec succès
                 if DataSet:
+                    listOperation.append(DataSet)
                     # 2- Exécution de la fonction pvgDecisionEnvoiSMS pour l'envoi ou non du sms
+                    """
                     vlpEnvoyerSms = pvgDecisionEnvoiSMS(connection, clsMouvementcomptable['AG_CODEAGENCE'])
                     if vlpEnvoyerSms:
                         clsParametreAppelApi = {}
@@ -908,7 +1000,7 @@ def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletag
                                 server.starttls()
                                 server.login(adresseEmail, motDePasse)
                                 server.sendmail(adresseEmail, destinataire, message.as_string())
-
+                    """
                     # 3- Exécution de la fonction pvpGenererMouchard pour l'insertion dans le mouchard
                     pvpGenererMouchard(connection, clsObjetEnvoi, DataSet["MC_NUMPIECE"], "A", sticker_code1)
 
@@ -925,14 +1017,23 @@ def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletag
                         clsBilletages[idx]['MC_NUMSEQUENCE'] = clsMouvementcomptable['MC_NUMSEQUENCE']
                         clsBilletages[idx]['PL_CODENUMCOMPTE'] = clsMouvementcomptable['PL_CODENUMCOMPTE']
                         pvgInsert(connection, clsBilletages[idx])
-
+            
             # 3- Ajout du numéro de bordereau à SL_MESSAGEAPI
-                    
+                    # Test du lien de l'API SMS
+                    LIENDAPISMS = LIENAPISMS + "Service/wsApisms.svc/SendMessage"
                     clsMouvementcomptable['NUMEROBORDEREAU'] = clsMouvementcomptable['NUMEROBORDEREAU'] #+ "/" + clsParametreAppelApis[0]['SL_MESSAGEAPI']
                     Retour = {}
                     Retour['NUMEROBORDEREAU'] = clsMouvementcomptable['NUMEROBORDEREAU']
-                    Retour['MESSAGEAPI'] = clsParametreAppelApis[0]['SL_MESSAGEAPI']
+                    Retour['MESSAGEAPI'] = ""#clsParametreAppelApis[0]['SL_MESSAGEAPI']
+                    if not IsValidateIP(LIENDAPISMS):
+                        Retour['MESSAGEAPI']  = "L'API SMS doit être configurée !!!"
                     Retour['SL_RESULTAT'] = "TRUE"
+                    
+            # Démarrer le traitement asynchrone dans un thread
+            if listOperation is not None:
+                        thread_traitement = threading.Thread(target=traitement_asynchrone, args=(connection, clsMouvementcomptables[0], listOperation))
+                        thread_traitement.daemon = True  # Définir le thread comme démon
+                        thread_traitement.start()
             # 4- Retourner le numéro de bordereau
             return Retour #clsMouvementcomptable['NUMEROBORDEREAU']
 
