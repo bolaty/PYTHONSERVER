@@ -10,14 +10,15 @@ CORS(app)
 
 # Connexion à la base de données au démarrage de l'application Flask
 @app.teardown_appcontext
-def connect_to_database(exception):
-    global db_connection
-    db_connection = connect_database()
 
-    if not db_connection:
+#def connect_to_database(exception):
+    #global db_connection
+    #db_connection = connect_database()
+
+    #if not db_connection:
         # Si la connexion échoue, vous pouvez prendre des mesures appropriées, par exemple, arrêter l'application
-        print("Impossible de se connecter à la base de données. Arrêt de l'application.")
-        exit(1)
+    #print("Impossible de se connecter à la base de données. Arrêt de l'application.")
+    #    exit(1)
 
 # Exemple de route pour tester la connexion à la base de données
 
