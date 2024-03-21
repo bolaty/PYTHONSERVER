@@ -76,9 +76,9 @@ def OperationVersementRetrait():
    
     # Récupérer la connexion à la base de données depuis current_app
    # db_connection = current_app.db_connection
-   
+    
    # db_connection.begin()
-    try:
+    #try:
         db_connection = connect_database()
         db_connection = db_connection.cursor()
         db_connection.execute("BEGIN TRANSACTION")
@@ -87,14 +87,15 @@ def OperationVersementRetrait():
         response = pvgComptabilisationVersement(db_connection, clsEtatmouvementacomptabiliserss, clsBilletagess, clsObjetEnvoi)
         
         # Retourner la réponse au client
-        # Début de la transaction
-        #db_connection.commit()
-        # Valider la transaction
-        db_connection.close()
-        return jsonify({"NUMEROBORDEREAUREGLEMENT":str(response['NUMEROBORDEREAU']),"SL_MESSAGE":"Comptabilisation éffectuée avec success !!! / " + response['MESSAGEAPI'] ,"SL_RESULTAT": 'TRUE'}) 
-    except Exception as e:
+        if response['SL_RESULTAT'] == "TRUE":
+            #db_connection.close()
+            return jsonify({"NUMEROBORDEREAUREGLEMENT":str(response['NUMEROBORDEREAU']),"SL_MESSAGE":"Comptabilisation éffectuée avec success !!! / " + response['MESSAGEAPI'] ,"SL_RESULTAT": 'TRUE'}) 
+        else:
+            #db_connection.close()
+            return jsonify({"SL_MESSAGE":response['SL_MESSAGE'] ,"SL_RESULTAT": 'FALSE'}) 
+    #except Exception as e:
        # En cas d'erreur, annuler la transaction
         #db_connection.execute("ROLLBACK")
         #db_connection.close()
-        return jsonify({"SL_MESSAGE":str(e),"SL_RESULTAT": 'FALSE'})
+        #return jsonify({"SL_MESSAGE":str(e),"SL_RESULTAT": 'FALSE'})
         #return jsonify({"SL_MESSAGE":str(e),"SL_RESULTAT": 'FALSE'})    

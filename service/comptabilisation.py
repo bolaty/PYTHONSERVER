@@ -101,8 +101,8 @@ def execute_stored_procedure(connection, stored_procedure_name, params):
         result = cursor.fetchone()
         return result
     except pyodbc.Error as e:
-        error_message = f"Error executing stored procedure '{stored_procedure_name}': {e.args[0]}"
-        raise Exception(error_message)
+        MYSQL_REPONSE = f"Error executing stored procedure '{stored_procedure_name}': {e.args[0]}"
+        raise Exception(MYSQL_REPONSE)
     
 def pvgNumeroPiece(connection, *vppCritere):
     # Préparation des paramètres
@@ -126,8 +126,8 @@ def pvgNumeroPiece(connection, *vppCritere):
         cursor.close()
          # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible de récupérer le curseur de la base de données : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
 
     # Exécution de la procédure stockée
     try:
@@ -138,8 +138,8 @@ def pvgNumeroPiece(connection, *vppCritere):
         cursor.close()
         # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
-        error_message = str(e)
-        raise Exception(error_message)
+        MYSQL_REPONSE = str(e.args[1])
+        raise Exception(MYSQL_REPONSE)
       
     # Récupération des résultats
     try:
@@ -150,8 +150,8 @@ def pvgNumeroPiece(connection, *vppCritere):
     except Exception as e:
          # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible de récupérer les résultats de la procédure stockée : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible de récupérer les résultats de la procédure stockée : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
     
 def pvgTestJournee(connection, clsObjetEnvoi):
     # Appeler la fonction pvgValueScalarRequeteCount avec le paramètre AG_CODEAGENCE et récupérer la réponse dans l'objet clsAgence
@@ -210,8 +210,8 @@ def pvg_comptabilisation_tontine(connection, cls_mouvement_comptable):
         cursor.close()
          # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible de récupérer le curseur de la base de données : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
     # Exécution de la procédure stockée
     try:
         cursor.execute("EXECUTE PS_COMPTABILISATIONTONTINENEW  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?", list(params.values()))
@@ -220,10 +220,10 @@ def pvg_comptabilisation_tontine(connection, cls_mouvement_comptable):
     except Exception as e:
         cursor.close()
         # En cas d'erreur, annuler la transaction
-        cursor.execute("ROLLBACK")
-        error_message = str(e)
-        raise Exception(error_message)
-       # return {'error': f'Impossible d\'exécuter la procédure stockée : {str(e)}'}
+        #cursor.execute("ROLLBACK")
+        MYSQL_REPONSE = e.args[1]
+        raise Exception(MYSQL_REPONSE)
+       # return {'error': f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'}
     
   
     # Récupération des résultats
@@ -243,8 +243,8 @@ def pvg_comptabilisation_tontine(connection, cls_mouvement_comptable):
     except Exception as e:
          # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible de récupérer les résultats de la procédure stockée : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible de récupérer les résultats de la procédure stockée : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
 
     # Retour des résultats
    # return rows
@@ -286,8 +286,8 @@ def pvgTableLabelOperateur(connection, *vppCritere):
     except Exception as e:
         cursor.close()
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible d\'exécuter la procédure stockée : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
     
     try:
         rows = cursor.fetchall()
@@ -304,8 +304,8 @@ def pvgTableLabelOperateur(connection, *vppCritere):
     except Exception as e:
         cursor.close()
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible d\'exécuter la procédure stockée : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
 def pvgTableLabel(connection, *vppCritere):
     cursor = connection
 
@@ -324,8 +324,8 @@ def pvgTableLabel(connection, *vppCritere):
     except Exception as e:
         cursor.close()
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible d\'exécuter la procédure stockée : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
     
     try:
         rows = cursor.fetchall()
@@ -349,8 +349,8 @@ def pvgTableLabel(connection, *vppCritere):
     except Exception as e:
         cursor.close()
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible d\'exécuter la procédure stockée : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
 
 
 def pvgValueScalarRequeteCount(connection, *vppCritere):
@@ -372,8 +372,8 @@ def pvgValueScalarRequeteCount(connection, *vppCritere):
     except Exception as e:
         cursor.close()
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible d\'exécuter la procédure stockée : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
     
     try:
         rows = cursor.fetchall()
@@ -388,8 +388,8 @@ def pvgValueScalarRequeteCount(connection, *vppCritere):
     except Exception as e:
         cursor.close()
         cursor.execute("ROLLBACK")
-        error_message = str(e)
-        raise Exception(error_message)
+        MYSQL_REPONSE = str(e.args[1])
+        raise Exception(MYSQL_REPONSE)
 
     
 def pvgTableLabelAgence(connection, *vppCritere):
@@ -410,8 +410,8 @@ def pvgTableLabelAgence(connection, *vppCritere):
     except Exception as e:
         cursor.close()
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible d\'exécuter la procédure stockée : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
     
     try:
         rows = cursor.fetchall()
@@ -439,8 +439,8 @@ def pvgTableLabelAgence(connection, *vppCritere):
     except Exception as e:
         cursor.close()
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible d\'exécuter la procédure stockée : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
 
 def pvgMobileSms(connection, clsParams):
     clsSmss = []
@@ -479,8 +479,8 @@ def pvgMobileSms(connection, clsParams):
         # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
         cursor.close()
-        error_message = f'Impossible de récupérer le curseur de la base de données : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
 
     # Exécution de la procédure stockée
     try:
@@ -491,9 +491,9 @@ def pvgMobileSms(connection, clsParams):
         # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
         cursor.close()
-        error_message = str(e)
-        raise Exception(error_message)
-       # return {'error': f'Impossible d\'exécuter la procédure stockée : {str(e)}'}
+        MYSQL_REPONSE = str(e.args[1])
+        raise Exception(MYSQL_REPONSE)
+       # return {'error': f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'}
     clsSmss = recup_info_apisms_client(connection, clsParams['CO_CODECOMPTE'])
     
     return clsSmss
@@ -626,8 +626,8 @@ def pvgMobileSmsUpdateStatut(connection, AG_CODEAGENCE, SM_DATEPIECE, SM_DATEEMI
         cursor.close()
          # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible de récupérer le curseur de la base de données : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
 
     # Exécution de la procédure stockée
     try:
@@ -635,8 +635,8 @@ def pvgMobileSmsUpdateStatut(connection, AG_CODEAGENCE, SM_DATEPIECE, SM_DATEEMI
         #instruction pour valider la commande de mise à jour
         #connection.commit()
     except Exception as e:
-        error_message = str(e)
-        raise Exception(error_message)
+        MYSQL_REPONSE = str(e)
+        raise Exception(MYSQL_REPONSE)
 
     # Récupération des résultats
     try:
@@ -645,8 +645,8 @@ def pvgMobileSmsUpdateStatut(connection, AG_CODEAGENCE, SM_DATEPIECE, SM_DATEEMI
     except Exception as e:
          # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible de récupérer les résultats de la procédure stockée : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible de récupérer les résultats de la procédure stockée : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
 
 
 def pvgBordereau(connection, *vppCritere):
@@ -702,8 +702,8 @@ def recup_info_versement_client(connection, ag_code_agence, ct_id_carte, mc_date
             return borderau
     except Exception as e:
         cursor.execute("ROLLBACK")
-        error_message = str(e)
-        raise Exception(error_message)
+        MYSQL_REPONSE = str(e.args[1])
+        raise Exception(MYSQL_REPONSE)
 
 def recup_info_apisms_client(connection, co_codecompte):
     try:
@@ -741,9 +741,9 @@ def recup_info_apisms_client(connection, co_codecompte):
     except Exception as e:
         cursor.execute("ROLLBACK")
         cursor.close()
-        error_message = str(e)
-        raise Exception(error_message)
-        #print(f"Une erreur s'est produite : {str(e)}")   
+        MYSQL_REPONSE = str(e.args[1])
+        raise Exception(MYSQL_REPONSE)
+        #print(f"Une erreur s'est produite : {str(e.args[1])}")   
 
 def recup_info_apisms_clientresultat(connection, co_codeoperateur):
     try:
@@ -766,8 +766,8 @@ def recup_info_apisms_clientresultat(connection, co_codeoperateur):
         # Faites ce que vous voulez avec les données récupérées
         #return RetourSmssResultat
     except Exception as e:
-        error_message = str(e)
-        raise Exception(error_message)
+        MYSQL_REPONSE = str(e.args[1])
+        raise Exception(MYSQL_REPONSE)
         #print(f"Une erreur s'est produite : {str(e)}")   
 def recup_info_incrementclientresultat(connection, co_codeoperateur):
     try:
@@ -789,8 +789,8 @@ def recup_info_incrementclientresultat(connection, co_codeoperateur):
         # Faites ce que vous voulez avec les données récupérées
         return RetourNumResultat
     except Exception as e:
-        error_message = str(e)
-        raise Exception(error_message)
+        MYSQL_REPONSE = str(e.args[1])
+        raise Exception(MYSQL_REPONSE)
 def recup_info_apisms_clientpiece(connection, co_codeoperateur):
     try:
         cursor = connection
@@ -808,8 +808,8 @@ def recup_info_apisms_clientpiece(connection, co_codeoperateur):
             # Faites ce que vous voulez avec les données récupérées
             return recup
     except Exception as e:
-        error_message = str(e)
-        raise Exception(error_message)
+        MYSQL_REPONSE = str(e.args[1])
+        raise Exception(MYSQL_REPONSE)
 def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletages, clsObjetEnvoi):
         try:
             IsNetworkConnected()
@@ -932,148 +932,18 @@ def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletag
                     Retour = {}
                     Retour['NUMEROBORDEREAU'] = clsMouvementcomptable['NUMEROBORDEREAU']
                     Retour['MESSAGEAPI'] = clsParametreAppelApis[0]['SL_MESSAGEAPI']
+                    Retour['SL_RESULTAT'] = "TRUE"
             # 4- Retourner le numéro de bordereau
             return Retour #clsMouvementcomptable['NUMEROBORDEREAU']
 
         except Exception as e:
-            connection.execute("ROLLBACK")
-            connection.close()
-            error_message = str(e)
-            raise Exception(error_message)
+            #connection.execute("ROLLBACK")
+            #connection.close()
+            Retour = {}
+            Retour['SL_MESSAGE'] = str(e.args[0])
+            Retour['SL_RESULTAT'] = "FALSE"
+            return Retour
         
-def pvgComptabilisationVersement1(connection, clsMouvementcomptables, clsBilletages, clsObjetEnvoi):
-    try:
-        vlpTS_CODETYPESCHEMACOMPTABLE = ""
-        vlpNumPiece =0 #pvgNumeroPiece(connection, clsMouvementcomptables[0]['AG_CODEAGENCE'], str(clsMouvementcomptables[0]['MC_DATEPIECE']))
-        ip_address = get_ip_address()
-        public_ip_address = get_public_ip_address()
-        mac_address = get_mac_address()
-
-        # Mettre ensemble les informations de l'ordinateur et les séparer par des @
-        sticker_code1 = ip_address + "@" + public_ip_address + "@" + mac_address
-        vlpTS_CODETYPESCHEMACOMPTABLE = clsMouvementcomptables[0]['TS_CODETYPESCHEMACOMPTABLE']
-        clsParametreAppelApis = []
-        for clsMouvementcomptable in clsMouvementcomptables:
-            clsMouvementcomptable['MC_NUMPIECE'] = vlpNumPiece
-            if clsMouvementcomptable['MC_REFERENCEPIECE'] == "":
-                clsMouvementcomptable['MC_REFERENCEPIECE'] = vlpNumPiece
-                clsMouvementcomptable['MC_TERMINAL'] = sticker_code1
-            # 1- Exécution de la fonction pvg_comptabilisation_tontine pour la comptabilisation
-            DataSet = pvg_comptabilisation_tontine(connection, clsMouvementcomptable)
-            # Vérifier si la première instruction s'est terminée avec succès
-            #""""
-        if DataSet:
-            # 2- Exécution de la fonction pvgDecisionEnvoiSMS pour l'envoi ou non du sms
-            vlpEnvoyerSms = pvgDecisionEnvoiSMS(connection, clsMouvementcomptables[0]['AG_CODEAGENCE'])
-            if vlpEnvoyerSms:
-                clsParametreAppelApi = {}
-                clsParametreAppelApi['AG_CODEAGENCE'] = clsMouvementcomptables[0]['AG_CODEAGENCE']
-                clsParametreAppelApi['PV_CODEPOINTVENTE'] = clsMouvementcomptables[0]['PV_CODEPOINTVENTE']
-                clsParametreAppelApi['CL_CODECLIENT'] = DataSet["CL_CODECLIENT"]
-                clsParametreAppelApi['CL_IDCLIENT'] = DataSet["CL_IDCLIENT"]
-                clsParametreAppelApi['CO_CODECOMPTE'] = clsMouvementcomptables[0]['CO_CODECOMPTE']
-                clsParametreAppelApi['OB_NOMOBJET'] = "FrmOperationGuichetTiersEpargnantJournalier"
-                clsParametreAppelApi['CL_CONTACT'] = DataSet["EJ_TELEPHONE"]
-                clsParametreAppelApi['OP_CODEOPERATEUR'] = clsMouvementcomptables[0]['OP_CODEOPERATEUR']
-                clsParametreAppelApi['SM_DATEPIECE'] = str(clsMouvementcomptables[0]['MC_DATEPIECE'])
-                clsParametreAppelApi['SL_MESSAGECLIENT'] = DataSet["SL_MESSAGECLIENT"]
-                clsParametreAppelApi['SM_NUMSEQUENCE'] = DataSet["SM_NUMSEQUENCERETOURS"]
-                clsParametreAppelApi['AG_EMAIL'] = DataSet["AG_EMAIL"]
-                clsParametreAppelApi['AG_EMAILMOTDEPASSE'] = DataSet["AG_EMAILMOTDEPASSE"]
-                clsParametreAppelApi['SL_MESSAGEOBJET'] = DataSet["SL_MESSAGEOBJET"]
-                clsParametreAppelApi['EJ_EMAILCLIENT'] = DataSet["EJ_EMAILCLIENT"]
-                clsParametreAppelApi['SL_LIBELLE1'] = ""#row["SL_LIBELLE1"]
-                clsParametreAppelApi['SL_LIBELLE2'] = ""#row["SL_LIBELLE2"]
-                clsParametreAppelApi['SL_CODEMESSAGE'] = ""#row["SL_CODEMESSAGE"]
-                clsParametreAppelApi['SL_RESULTAT'] = ""#row["SL_RESULTAT"]
-                clsParametreAppelApi['SL_MESSAGE'] = ""#row["SL_MESSAGE"]
-                clsParametreAppelApis.append(clsParametreAppelApi)
-
-                #clsSmsoutWSBLL = clsSmsoutWSBLL()
-                TE_CODESMSTYPEOPERATION = "0005"
-                SL_LIBELLE1 = "C"
-                SL_LIBELLE2 = ""
-
-                clsParams = pvgTraitementSms(
-                    connection, 
-                    clsParametreAppelApis[0]['AG_CODEAGENCE'], 
-                    clsParametreAppelApis[0]['PV_CODEPOINTVENTE'], 
-                    clsParametreAppelApis[0]['CO_CODECOMPTE'], 
-                    clsParametreAppelApis[0]['OB_NOMOBJET'], 
-                    clsParametreAppelApis[0]['CL_CONTACT'], 
-                    clsParametreAppelApis[0]['OP_CODEOPERATEUR'], 
-                    clsParametreAppelApis[0]['SM_DATEPIECE'], 
-                    "", 
-                    clsParametreAppelApis[0]['CL_IDCLIENT'], 
-                    "", 
-                    clsParametreAppelApis[0]['SL_MESSAGECLIENT'], 
-                    TE_CODESMSTYPEOPERATION, 
-                    "0", 
-                    "01/01/1900", 
-                    "0", 
-                    "0", 
-                    "N", 
-                    "0", 
-                    clsParametreAppelApis[0]['SL_LIBELLE1'], 
-                    clsParametreAppelApis[0]['SL_LIBELLE2']
-                )
-
-                clsParametreAppelApis[0]['SL_RESULTATAPI'] = clsParams['SL_RESULTAT']
-                clsParametreAppelApis[0]['SL_MESSAGEAPI'] = clsParams['SL_MESSAGE']
-                if clsParams['SL_RESULTAT'] == "FALSE":
-                    clsParametreAppelApis[0]['SL_MESSAGE'] = clsParametreAppelApis[0]['SL_MESSAGE'] + " " + clsParametreAppelApis[0]['SL_MESSAGEAPI'] 
-                if clsParams['SL_RESULTAT'] == "TRUE":
-                    clsParametreAppelApis[0]['SL_MESSAGEAPI'] = ""
-                #"""
-                #clsParametreAppelApis[0]['SL_LIBELLE1'] = "bolatykouassieuloge@gmail.com"
-                if "@" in clsParametreAppelApis[0]['EJ_EMAILCLIENT']:
-                    smtpServeur = "smtp.gmail.com"
-                    portSmtp = 587
-                    adresseEmail = clsParametreAppelApis[0]['AG_EMAIL']
-                    motDePasse = clsParametreAppelApis[0]['AG_EMAILMOTDEPASSE']
-                    destinataire = clsParametreAppelApis[0]['EJ_EMAILCLIENT']
-                    sujet = "Code Validation"
-                    corpsMessage = clsParametreAppelApis[0]['SL_MESSAGECLIENT']
-                    message = MIMEMultipart()
-                    message['From'] = adresseEmail
-                    message['To'] = destinataire
-                    message['Subject'] = sujet
-                    message.attach(MIMEText(corpsMessage, 'plain'))
-                    with smtplib.SMTP(smtpServeur, portSmtp) as server:
-                        server.starttls()
-                        server.login(adresseEmail, motDePasse)
-                        server.sendmail(adresseEmail, destinataire, message.as_string())
-                #"""
-            # 3- Exécution de la fonction pvpGenererMouchard pour l'insertion dans le mouchard
-            pvpGenererMouchard(connection,clsObjetEnvoi, DataSet["MC_NUMPIECE"], "A",sticker_code1)
-        
-            # 4- Exécution de la fonction pvgBordereau pour obtenir les informations du mouvement comptable
-            clsMouvementcomptable = DataSet #pvgBordereau(connection, clsMouvementcomptables[0]['AG_CODEAGENCE'], clsMouvementcomptables[0]['TS_CODETYPESCHEMACOMPTABLE'], clsMouvementcomptables[0]['MC_DATEPIECE'].ToShortDateString(), clsMouvementcomptables[0]['AG_COP_CODEOPERATEURDEAGENCE'])
-        
-        # 2- Mise à jour du billetage
-        if clsBilletages is not None:
-            for idx in range(len(clsBilletages)):
-                clsBilletages[idx]['AG_CODEAGENCE'] = clsMouvementcomptable['AG_CODEAGENCE']
-                clsBilletages[idx]['MC_DATEPIECE'] = clsMouvementcomptable['MC_DATEPIECE']
-                clsBilletages[idx]['MC_NUMPIECE']= clsMouvementcomptable['MC_NUMPIECE']
-                clsBilletages[idx]['MC_NUMSEQUENCE'] = clsMouvementcomptable['MC_NUMSEQUENCE']
-                clsBilletages[idx]['PL_CODENUMCOMPTE'] = clsMouvementcomptable['PL_CODENUMCOMPTE']
-                pvgInsert(connection, clsBilletages[idx])
-
-        # 3- Ajout du numéro de bordereau à SL_MESSAGEAPI
-        clsMouvementcomptable['NUMEROBORDEREAU'] = clsMouvementcomptable['NUMEROBORDEREAU'] + "/" + clsParametreAppelApis[0]['SL_MESSAGEAPI']
-        
-        # 4- Retourner le numéro de bordereau
-        #"""
-        return clsMouvementcomptable['NUMEROBORDEREAU']
-    except Exception as e:
-        #connection.close()
-        #connection.rollback()
-        connection.execute("ROLLBACK")
-        connection.close()
-        return str(e) #MYSQL_REPONSE# {'error': f'source erreur : {str(e)}'}
-    
-
 def pvpGenererMouchard(connection,clsObjetEnvoi, vppAction, vppTypeAction,TERMINALIDENTIFIANT):
     clsMouchard = {}
     clsMouchard['AG_CODEAGENCE'] = clsObjetEnvoi.OE_A
@@ -1114,8 +984,8 @@ def pvpGenererMouchard(connection,clsObjetEnvoi, vppAction, vppTypeAction,TERMIN
         cursor.close()
          # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
-        error_message = f'Impossible de récupérer le curseur de la base de données : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
 
     # Exécution de la procédure stockée
     try:
@@ -1123,8 +993,8 @@ def pvpGenererMouchard(connection,clsObjetEnvoi, vppAction, vppTypeAction,TERMIN
         #instruction pour valider la commande de mise à jour
         #connection.commit()
     except Exception as e:
-        error_message = f'Impossible de récupérer le curseur de la base de données : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
 
    
 
@@ -1217,8 +1087,8 @@ def IsNetworkConnected():
         response = requests.get("http://www.google.com", timeout=5)
         return response.status_code == 200
     except requests.ConnectionError:
-        error_message = f'Opération impossible veuillez revoir la connexion internet'
-        raise Exception(error_message)   
+        MYSQL_REPONSE = f'Opération impossible veuillez revoir la connexion internet'
+        raise Exception(MYSQL_REPONSE)   
 
 
 def pvgInsert(connection, clsBilletage):
@@ -1247,12 +1117,12 @@ def pvgInsert(connection, clsBilletage):
         # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
         cursor.close()
-        error_message = f'Impossible de récupérer le curseur de la base de données : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
 
     # Exécution de la procédure stockée
     try:
-        #connection.commit()
+        connection.commit()
         cursor.execute("EXECUTE PC_BILLETAGE  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?", list(params.values()))
         #instruction pour valider la commande de mise à jour
         connection.commit()
@@ -1260,8 +1130,8 @@ def pvgInsert(connection, clsBilletage):
         # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
         cursor.close()
-        error_message = f'Impossible de récupérer le curseur de la base de données : {str(e)}'
-        raise Exception(error_message)
+        MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
 def get_ip_address():
     try:
         hostname = socket.gethostname()
