@@ -1,4 +1,4 @@
-from flask import Flask,jsonify,request
+from flask import Flask,jsonify,request,render_template
 from flask_cors import CORS
 from utils import connect_database
 import logging as logger
@@ -23,8 +23,8 @@ def connect_to_database(exception):
 
 @app.route('/')
 def index():
-    global db_connection
-
+    #global db_connection
+    
     #cursor = db_connection.cursor()
     #insert_query = "INSERT INTO TABLEINSERTION (IDTABLEINSET, LIBELLETABLEINSET) VALUES (3,'euloge')"
     #cursor.execute(insert_query)
@@ -37,7 +37,8 @@ def index():
     #db_connection.commit()
     # Fermer la connexion à la base de données
     #db_connection.close()
-    return 'ok'
+    #return 'ok'
+    return render_template('home.html')
 
 
 # Enregistrer le blueprint API
