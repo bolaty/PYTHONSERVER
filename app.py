@@ -9,7 +9,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Connexion à la base de données au démarrage de l'application Flask
-@app.teardown_appcontext
+#@app.teardown_appcontext
 
 #def connect_to_database(exception):
     #global db_connection
