@@ -5,7 +5,7 @@ def connect_database():
     try:
         # Connexion à la base de données SQL Server
         #connection_string = f'DRIVER=ODBC Driver 18 for SQL Server;SERVER={MYSQL_HOST};DATABASE={MYSQL_DATABASE};UID={MYSQL_USER};PWD={MYSQL_PASSWORD}'
-        connection_string = f'DRIVER=ODBC Driver 18 for SQL Server;SERVER={MYSQL_HOST};DATABSE={MYSQL_DATABASE};UID={MYSQL_USER};TrustServerCertificate=true;'
+        connection_string = f'DRIVER=ODBC Driver 18 for SQL Server;SERVER={MYSQL_HOST};DATABSE={MYSQL_DATABASE};UID={MYSQL_USER};TrustServerCertificate=yes;'
         connection = pyodbc.connect(connection_string)
         print("Connexion à la base de données réussie !")
         return connection
