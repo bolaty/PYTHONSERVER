@@ -99,3 +99,10 @@ def OperationVersementRetrait():
         #db_connection.close()
         #return jsonify({"SL_MESSAGE":str(e),"SL_RESULTAT": 'FALSE'})
         #return jsonify({"SL_MESSAGE":str(e),"SL_RESULTAT": 'FALSE'})    
+
+
+@api_bp.route('/pvgAjouterComptabilisationtest', methods=['POST'])
+def OperationVersementRetraittest():
+    # Récupérer les données du corps de la requête
+    
+    return jsonify({"NUMEROBORDEREAUREGLEMENT":"verstest000215256","SL_MESSAGE":"Comptabilisation éffectuée avec success !!! / "  ,"SL_RESULTAT": 'TRUE'})             
