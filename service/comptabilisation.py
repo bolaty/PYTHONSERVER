@@ -891,7 +891,7 @@ def traitement_asynchrone(connection, clsMouvementcomptable, listOperations):
                                     server.starttls()
                                     server.login(adresseEmail, motDePasse)
                                     server.sendmail(adresseEmail, destinataire, message.as_string())
-            connection.close() 
+            #connection.close() 
             pass
           
     except Exception as e:
