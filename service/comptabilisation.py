@@ -813,28 +813,28 @@ def recup_info_apisms_clientpiece(connection, co_codeoperateur):
         raise Exception(MYSQL_REPONSE)
     
     
-def traitement_asynchrone(connection, clsMouvementcomptable, listOperation):
+def traitement_asynchrone(connection, clsMouvementcomptable, listOperations):
     try:
          # Votre traitement asynchrone ici
-            for idx in range(len(listOperation)):
+            for listOperation in listOperations:
                         vlpEnvoyerSms = pvgDecisionEnvoiSMS(connection, clsMouvementcomptable['AG_CODEAGENCE'])
                         if vlpEnvoyerSms:
                             clsParametreAppelApi = {}
                             clsParametreAppelApi['AG_CODEAGENCE'] = clsMouvementcomptable['AG_CODEAGENCE']
                             clsParametreAppelApi['PV_CODEPOINTVENTE'] = clsMouvementcomptable['PV_CODEPOINTVENTE']
-                            clsParametreAppelApi['CL_CODECLIENT'] = listOperation[idx]["CL_CODECLIENT"]
-                            clsParametreAppelApi['CL_IDCLIENT'] = listOperation[idx]["CL_IDCLIENT"]
+                            clsParametreAppelApi['CL_CODECLIENT'] = listOperation["CL_CODECLIENT"]
+                            clsParametreAppelApi['CL_IDCLIENT'] = listOperation["CL_IDCLIENT"]
                             clsParametreAppelApi['CO_CODECOMPTE'] = clsMouvementcomptable['CO_CODECOMPTE']
                             clsParametreAppelApi['OB_NOMOBJET'] = "FrmOperationGuichetTiersEpargnantJournalier"
-                            clsParametreAppelApi['CL_CONTACT'] = listOperation[idx]["EJ_TELEPHONE"]
+                            clsParametreAppelApi['CL_CONTACT'] = listOperation["EJ_TELEPHONE"]
                             clsParametreAppelApi['OP_CODEOPERATEUR'] = clsMouvementcomptable['OP_CODEOPERATEUR']
                             clsParametreAppelApi['SM_DATEPIECE'] = str(clsMouvementcomptable['MC_DATEPIECE'])
-                            clsParametreAppelApi['SL_MESSAGECLIENT'] = listOperation[idx]["SL_MESSAGECLIENT"]
-                            clsParametreAppelApi['SM_NUMSEQUENCE'] = listOperation[idx]["SM_NUMSEQUENCERETOURS"]
-                            clsParametreAppelApi['AG_EMAIL'] = listOperation[idx]["AG_EMAIL"]
-                            clsParametreAppelApi['AG_EMAILMOTDEPASSE'] = listOperation[idx]["AG_EMAILMOTDEPASSE"]
-                            clsParametreAppelApi['SL_MESSAGEOBJET'] = listOperation[idx]["SL_MESSAGEOBJET"]
-                            clsParametreAppelApi['EJ_EMAILCLIENT'] = listOperation[idx]["EJ_EMAILCLIENT"]
+                            clsParametreAppelApi['SL_MESSAGECLIENT'] = listOperation["SL_MESSAGECLIENT"]
+                            clsParametreAppelApi['SM_NUMSEQUENCE'] = listOperation["SM_NUMSEQUENCERETOURS"]
+                            clsParametreAppelApi['AG_EMAIL'] = listOperation["AG_EMAIL"]
+                            clsParametreAppelApi['AG_EMAILMOTDEPASSE'] = listOperation["AG_EMAILMOTDEPASSE"]
+                            clsParametreAppelApi['SL_MESSAGEOBJET'] = listOperation["SL_MESSAGEOBJET"]
+                            clsParametreAppelApi['EJ_EMAILCLIENT'] = listOperation["EJ_EMAILCLIENT"]
                             clsParametreAppelApi['SL_LIBELLE1'] = ""
                             clsParametreAppelApi['SL_LIBELLE2'] = ""
                             clsParametreAppelApis = [clsParametreAppelApi]
