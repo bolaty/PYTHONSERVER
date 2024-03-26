@@ -1030,10 +1030,10 @@ def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletag
                     Retour['SL_RESULTAT'] = "TRUE"
                     
                     # Démarrer le traitement asynchrone dans un thread
-            if listOperation is not None and Retour['SL_RESULTAT'] == "TRUE":
-                    thread_traitement = threading.Thread(target=traitement_asynchrone, args=(connection, clsMouvementcomptables[0], listOperation))
-                    thread_traitement.daemon = True  # Définir le thread comme démon
-                    thread_traitement.start()
+                    if listOperation is not None and Retour['SL_RESULTAT'] == "TRUE":
+                                thread_traitement = threading.Thread(target=traitement_asynchrone, args=(connection, clsMouvementcomptables[0], listOperation))
+                                thread_traitement.daemon = True  # Définir le thread comme démon
+                                thread_traitement.start()
             # 4- Retourner le numéro de bordereau
             return Retour #clsMouvementcomptable['NUMEROBORDEREAU']
 
