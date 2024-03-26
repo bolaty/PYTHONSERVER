@@ -33,7 +33,7 @@ def OperationVersementRetrait():
         clsEtatmouvementacomptabilisers['MC_DATEPIECE'] = row['MC_DATEPIECE']
         clsEtatmouvementacomptabilisers['MC_LIBELLEOPERATION'] = row['MC_LIBELLEOPERATION']
         clsEtatmouvementacomptabilisers['MC_MONTANTDEBIT'] = row['MC_MONTANTDEBIT']
-       # clsEtatmouvementacomptabilisers['EM_NOMOBJET'] = row['EM_NOMOBJET']
+        clsEtatmouvementacomptabilisers['MC_NOMTIERS'] = row['MC_NOMTIERS']
        # clsEtatmouvementacomptabilisers['EM_NUMEROSEQUENCE'] = row['EM_NUMEROSEQUENCE']
         clsEtatmouvementacomptabilisers['MC_NUMPIECETIERS'] = row['MC_NUMPIECE']
         clsEtatmouvementacomptabilisers['MC_REFERENCEPIECE'] = row['MC_REFERENCEPIECE']

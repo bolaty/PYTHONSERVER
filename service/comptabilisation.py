@@ -192,7 +192,7 @@ def pvg_comptabilisation_tontine(connection, cls_mouvement_comptable):
         'PL_CODENUMCOMPTE': cls_mouvement_comptable['PL_CODENUMCOMPTE'],
         'MONTANT': cls_mouvement_comptable['MC_MONTANTDEBIT'],
         'DATEJOURNEE': date_piece,#cls_mouvement_comptable['MC_DATEPIECE'],
-        'MC_NOMTIERS': "",#cls_mouvement_comptable['MC_NOMTIERS'],
+        'MC_NOMTIERS': cls_mouvement_comptable['MC_NOMTIERS'],
         'PI_CODEPIECE': cls_mouvement_comptable['PI_CODEPIECE'],
         'MC_NUMPIECETIERS': cls_mouvement_comptable['MC_NUMPIECETIERS'],
         'OP_CODEOPERATEUR': cls_mouvement_comptable['OP_CODEOPERATEUR'],
@@ -923,9 +923,9 @@ def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletag
                 
                 # Vérifier si la première instruction s'est terminée avec succès
                 if DataSet:
-                    listOperation.append(DataSet)
+                    #listOperation.append(DataSet)
                     # 2- Exécution de la fonction pvgDecisionEnvoiSMS pour l'envoi ou non du sms
-                    """
+                    #"""
                     vlpEnvoyerSms = pvgDecisionEnvoiSMS(connection, clsMouvementcomptable['AG_CODEAGENCE'])
                     if vlpEnvoyerSms:
                         clsParametreAppelApi = {}
@@ -1000,7 +1000,7 @@ def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletag
                                 server.starttls()
                                 server.login(adresseEmail, motDePasse)
                                 server.sendmail(adresseEmail, destinataire, message.as_string())
-                    """
+                    #"""
                     # 3- Exécution de la fonction pvpGenererMouchard pour l'insertion dans le mouchard
                     pvpGenererMouchard(connection, clsObjetEnvoi, DataSet["MC_NUMPIECE"], "A", sticker_code1)
 
@@ -1030,10 +1030,10 @@ def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletag
                     Retour['SL_RESULTAT'] = "TRUE"
                     
                     # Démarrer le traitement asynchrone dans un thread
-                    if listOperation is not None and Retour['SL_RESULTAT'] == "TRUE":
-                                thread_traitement = threading.Thread(target=traitement_asynchrone, args=(connection, clsMouvementcomptables[0], listOperation))
-                                thread_traitement.daemon = True  # Définir le thread comme démon
-                                thread_traitement.start()
+                    #if listOperation is not None and Retour['SL_RESULTAT'] == "TRUE":
+                    #            thread_traitement = threading.Thread(target=traitement_asynchrone, args=(connection, clsMouvementcomptables[0], listOperation))
+                    #            thread_traitement.daemon = True  # Définir le thread comme démon
+                    #            thread_traitement.start()
             # 4- Retourner le numéro de bordereau
             return Retour #clsMouvementcomptable['NUMEROBORDEREAU']
 
