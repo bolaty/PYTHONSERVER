@@ -199,7 +199,7 @@ def pvg_comptabilisation_tontine(connection, cls_mouvement_comptable):
         'TS_CODETYPESCHEMACOMPTABLE': cls_mouvement_comptable['TS_CODETYPESCHEMACOMPTABLE'],
         'ALPHA': 'Y}@128eVIXfoi7',
         'MC_TERMINAL': cls_mouvement_comptable['MC_TERMINAL'],
-        'MC_AUTRE1': "",
+        'MC_AUTRE1': cls_mouvement_comptable['MC_AUTRE1'],
         'MC_AUTRE2': "",
         'MC_AUTRE3': ""
     }
@@ -223,7 +223,11 @@ def pvg_comptabilisation_tontine(connection, cls_mouvement_comptable):
         # En cas d'erreur, annuler la transaction
         #cursor.execute("ROLLBACK")
         MYSQL_REPONSE = e.args[1]
+        if "varchar" in MYSQL_REPONSE:
+            MYSQL_REPONSE = MYSQL_REPONSE.split("varchar", 1)[1].split("en type de donn", 1)[0]
+       
         raise Exception(MYSQL_REPONSE)
+        
        # return {'error': f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'}
     
   
@@ -249,6 +253,83 @@ def pvg_comptabilisation_tontine(connection, cls_mouvement_comptable):
 
     # Retour des résultats
    # return rows
+   
+def pvg_comptabilisation_tontinePrelevement(connection, cls_mouvement_comptable):
+    # Convertir la valeur de MC_DATEPIECE en datetime
+    date_piece_str = cls_mouvement_comptable['MC_DATEPIECE']
+    date_piece = datetime.strptime(date_piece_str, "%d/%m/%Y")
+
+    # Paramètres de la procédure stockée
+    params = {
+        'AG_CODEAGENCE': cls_mouvement_comptable['AG_CODEAGENCE'],
+        'PV_CODEPOINTVENTE': cls_mouvement_comptable['PV_CODEPOINTVENTE'],
+        'CO_CODECOMPTE': cls_mouvement_comptable['CO_CODECOMPTE'],
+        'CT_IDCARTE': cls_mouvement_comptable['TI_IDTIERS'],
+        'MC_CONTACTTIERS': "2250788635251",#cls_mouvement_comptable['MI_CODEMISE'],
+        'MC_NUMPIECE': cls_mouvement_comptable['MC_NUMPIECE'],
+        'MC_REFERENCEPIECE': cls_mouvement_comptable['MC_REFERENCEPIECE'],
+        'MC_LIBELLEOPERATION': cls_mouvement_comptable['MC_LIBELLEOPERATION'],
+        'PL_CODENUMCOMPTE': cls_mouvement_comptable['PL_CODENUMCOMPTE'],
+        'MONTANT': cls_mouvement_comptable['MC_MONTANTDEBIT'],
+        'DATEJOURNEE': date_piece,#cls_mouvement_comptable['MC_DATEPIECE'],
+        'MC_NOMTIERS': cls_mouvement_comptable['MC_NOMTIERS'],
+        'PI_CODEPIECE': cls_mouvement_comptable['PI_CODEPIECE'],
+        'MC_NUMPIECETIERS': cls_mouvement_comptable['MC_NUMPIECETIERS'],
+        'OP_CODEOPERATEUR': cls_mouvement_comptable['OP_CODEOPERATEUR'],
+        'TS_CODETYPESCHEMACOMPTABLE': cls_mouvement_comptable['TS_CODETYPESCHEMACOMPTABLE'],
+        'ALPHA': 'Y}@128eVIXfoi7',
+        'MC_TERMINAL': cls_mouvement_comptable['MC_TERMINAL'],
+        'MC_AUTRE1': cls_mouvement_comptable['MC_AUTRE1'],
+        'MC_AUTRE2': "",
+        'MC_AUTRE3': ""
+    }
+
+     # Récupérer la connexion et le curseur de la base de données depuis cls_donnee
+    try:
+        cursor = connection
+    except Exception as e:
+        cursor.close()
+         # En cas d'erreur, annuler la transaction
+        cursor.execute("ROLLBACK")
+        MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)
+    # Exécution de la procédure stockée
+    try:
+        cursor.execute("EXECUTE PS_COMPTABILISATIONTONTINEPRELEVEMENTNEW  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?", list(params.values()))
+        #instruction pour valider la commande de mise à jour
+        #connection.commit()
+    except Exception as e:
+        cursor.close()
+        # En cas d'erreur, annuler la transaction
+        #cursor.execute("ROLLBACK")
+        MYSQL_REPONSE = e.args[1]
+        if "varchar" in MYSQL_REPONSE:
+            MYSQL_REPONSE = MYSQL_REPONSE.split("varchar", 1)[1].split("en type de donn", 1)[0]
+       
+        raise Exception(MYSQL_REPONSE)
+        
+       # return {'error': f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'}
+    
+  
+    # Récupération des résultats
+    try:
+        # Assurez-vous que la valeur est une chaîne de caractères pour pouvoir la convertir en entier
+        montant_debit_str = cls_mouvement_comptable['MC_MONTANTDEBIT']
+
+        # Convertir la chaîne de caractères en entier
+        montant_debit_int = int(montant_debit_str)
+        resultat = recup_info_versement_client(connection, cls_mouvement_comptable['AG_CODEAGENCE'], cls_mouvement_comptable['TI_IDTIERS'], date_piece, cls_mouvement_comptable['TS_CODETYPESCHEMACOMPTABLE'], cls_mouvement_comptable['CO_CODECOMPTE'], cls_mouvement_comptable['OP_CODEOPERATEUR'], montant_debit_int, 'Y}@128eVIXfoi7')
+        """
+        if resultat:
+           result= recup_info_apisms_clientpiece(connection,cls_mouvement_comptable['OP_CODEOPERATEUR'])
+           resultat["MC_NUMPIECE"]= result
+        """   
+        return resultat    
+    except Exception as e:
+         # En cas d'erreur, annuler la transaction
+        cursor.execute("ROLLBACK")
+        MYSQL_REPONSE = f'Impossible de récupérer les résultats de la procédure stockée : {str(e.args[1])}'
+        raise Exception(MYSQL_REPONSE)   
 def pvgDecisionEnvoiSMS(connection, *vppCritere):
     # Appeler la fonction pvgTableLabel avec le paramètre AG_CODEAGENCE et récupérer la réponse dans l'objet clsAgence
     clsAgence = pvgTableLabelAgence(connection, *vppCritere)
@@ -492,7 +573,10 @@ def pvgMobileSms(connection, clsParams):
         # En cas d'erreur, annuler la transaction
         cursor.execute("ROLLBACK")
         cursor.close()
-        MYSQL_REPONSE = str(e.args[1])
+        MYSQL_REPONSE = e.args[1]
+        if "varchar" in MYSQL_REPONSE:
+            MYSQL_REPONSE = MYSQL_REPONSE.split("varchar", 1)[1].split("en type de donn", 1)[0]
+            
         raise Exception(MYSQL_REPONSE)
        # return {'error': f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'}
     clsSmss = recup_info_apisms_client(connection, clsParams['CO_CODECOMPTE'])
@@ -822,7 +906,7 @@ def traitement_asynchrone(connection, clsMouvementcomptable, listOperation):
                 portSmtp = 587
                 adresseEmail = listOperation[idx]['AG_EMAIL']
                 motDePasse = listOperation[idx]['AG_EMAILMOTDEPASSE']
-                destinataire = 'bolatykouassieuloge@gmail.com'#clsParametreAppelApis[0]['EJ_EMAILCLIENT']
+                destinataire = listOperation[idx]['EJ_EMAILCLIENT']#'bolatykouassieuloge@gmail.com'
                 sujet = "Code Validation"
                 corpsMessage = listOperation[idx]['SL_MESSAGECLIENT']
                 message = MIMEMultipart()
@@ -868,7 +952,7 @@ def traitement_asynchrone(connection, clsMouvementcomptable, listOperation):
                     clsParametreAppelApi['PV_CODEPOINTVENTE'],
                     clsParametreAppelApi['CO_CODECOMPTE'],
                     clsParametreAppelApi['OB_NOMOBJET'],
-                    "2250788635251",#clsParametreAppelApi['CL_CONTACT'],
+                    clsParametreAppelApi['CL_CONTACT'],#"2250788635251"
                     clsParametreAppelApi['OP_CODEOPERATEUR'],
                     clsParametreAppelApi['SM_DATEPIECE'],
                     "",
@@ -897,6 +981,7 @@ def traitement_asynchrone(connection, clsMouvementcomptable, listOperation):
         pass
 
     except Exception as e:
+        connection.close() 
         print("Erreur lors du traitement asynchrone:", e)
 
 
@@ -905,141 +990,152 @@ def traitement_asynchrone(connection, clsMouvementcomptable, listOperation):
 def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletages, clsObjetEnvoi):
         try:
             listOperation = []
-            IsNetworkConnected()
-            pvgTestJournee(connection, clsObjetEnvoi)
-            vlpNumPiece = pvgNumeroPiece(connection, clsMouvementcomptables[0]['AG_CODEAGENCE'], str(clsMouvementcomptables[0]['MC_DATEPIECE']),clsMouvementcomptables[0]['OP_CODEOPERATEUR'],"MOUVEMENTCOMPTABLE")
-            vlpBiNumPiece = pvgNumeroPiece(connection, clsMouvementcomptables[0]['AG_CODEAGENCE'], str(clsMouvementcomptables[0]['MC_DATEPIECE']),clsMouvementcomptables[0]['OP_CODEOPERATEUR'],"BILLETAGE")
-            for clsMouvementcomptable in clsMouvementcomptables:
-                ip_address = get_ip_address()
-                public_ip_address = get_public_ip_address()
-                mac_address = get_mac_address()
+            statutinternet = IsNetworkConnected()
+            if statutinternet != 400:
+                pvgTestJournee(connection, clsObjetEnvoi)
+                vlpNumPiece = pvgNumeroPiece(connection, clsMouvementcomptables[0]['AG_CODEAGENCE'], str(clsMouvementcomptables[0]['MC_DATEPIECE']),clsMouvementcomptables[0]['OP_CODEOPERATEUR'],"MOUVEMENTCOMPTABLE")
+                vlpBiNumPiece = pvgNumeroPiece(connection, clsMouvementcomptables[0]['AG_CODEAGENCE'], str(clsMouvementcomptables[0]['MC_DATEPIECE']),clsMouvementcomptables[0]['OP_CODEOPERATEUR'],"BILLETAGE")
+                for clsMouvementcomptable in clsMouvementcomptables:
+                    ip_address = get_ip_address()
+                    public_ip_address = get_public_ip_address()
+                    mac_address = get_mac_address()
+                    LIBELLEACTION = clsMouvementcomptable['MC_LIBELLEOPERATION']
+                    # Mettre ensemble les informations de l'ordinateur et les séparer par des @
+                    sticker_code1 = ip_address + "@" + public_ip_address + "@" + mac_address
+                    clsMouvementcomptable['MC_NUMPIECE'] = vlpNumPiece[0]['MC_NUMPIECE']
+                    if clsMouvementcomptable['MC_REFERENCEPIECE'] == "":
+                        clsMouvementcomptable['MC_REFERENCEPIECE'] = vlpNumPiece[0]['MC_NUMPIECE']
+                        clsMouvementcomptable['MC_TERMINAL'] = sticker_code1
+                    if clsMouvementcomptable['PI_CODEPIECE'] == "":
+                        clsMouvementcomptable['PI_CODEPIECE'] = None
+                    # 1- Exécution de la fonction pvg_comptabilisation_tontine pour la comptabilisation
+                    DataSet = pvg_comptabilisation_tontine(connection, clsMouvementcomptable)
+                    
+                    # Vérifier si la première instruction s'est terminée avec succès
+                    if DataSet:
+                        listOperation.append(DataSet)
+                        # 2- Exécution de la fonction pvgDecisionEnvoiSMS pour l'envoi ou non du sms
+                        """
+                        vlpEnvoyerSms = pvgDecisionEnvoiSMS(connection, clsMouvementcomptable['AG_CODEAGENCE'])
+                        if vlpEnvoyerSms:
+                            clsParametreAppelApi = {}
+                            clsParametreAppelApi['AG_CODEAGENCE'] = clsMouvementcomptable['AG_CODEAGENCE']
+                            clsParametreAppelApi['PV_CODEPOINTVENTE'] = clsMouvementcomptable['PV_CODEPOINTVENTE']
+                            clsParametreAppelApi['CL_CODECLIENT'] = DataSet["CL_CODECLIENT"]
+                            clsParametreAppelApi['CL_IDCLIENT'] = DataSet["CL_IDCLIENT"]
+                            clsParametreAppelApi['CO_CODECOMPTE'] = clsMouvementcomptable['CO_CODECOMPTE']
+                            clsParametreAppelApi['OB_NOMOBJET'] = "FrmOperationGuichetTiersEpargnantJournalier"
+                            clsParametreAppelApi['CL_CONTACT'] = DataSet["EJ_TELEPHONE"]
+                            clsParametreAppelApi['OP_CODEOPERATEUR'] = clsMouvementcomptable['OP_CODEOPERATEUR']
+                            clsParametreAppelApi['SM_DATEPIECE'] = str(clsMouvementcomptable['MC_DATEPIECE'])
+                            clsParametreAppelApi['SL_MESSAGECLIENT'] = DataSet["SL_MESSAGECLIENT"]
+                            clsParametreAppelApi['SM_NUMSEQUENCE'] = DataSet["SM_NUMSEQUENCERETOURS"]
+                            clsParametreAppelApi['AG_EMAIL'] = DataSet["AG_EMAIL"]
+                            clsParametreAppelApi['AG_EMAILMOTDEPASSE'] = DataSet["AG_EMAILMOTDEPASSE"]
+                            clsParametreAppelApi['SL_MESSAGEOBJET'] = DataSet["SL_MESSAGEOBJET"]
+                            clsParametreAppelApi['EJ_EMAILCLIENT'] = DataSet["EJ_EMAILCLIENT"]
+                            clsParametreAppelApi['SL_LIBELLE1'] = ""
+                            clsParametreAppelApi['SL_LIBELLE2'] = ""
+                            clsParametreAppelApis = [clsParametreAppelApi]
 
-                # Mettre ensemble les informations de l'ordinateur et les séparer par des @
-                sticker_code1 = ip_address + "@" + public_ip_address + "@" + mac_address
-                clsMouvementcomptable['MC_NUMPIECE'] = vlpNumPiece[0]['MC_NUMPIECE']
-                if clsMouvementcomptable['MC_REFERENCEPIECE'] == "":
-                    clsMouvementcomptable['MC_REFERENCEPIECE'] = vlpNumPiece[0]['MC_NUMPIECE']
-                    clsMouvementcomptable['MC_TERMINAL'] = sticker_code1
+                            TE_CODESMSTYPEOPERATION = "0005"
+                            SL_LIBELLE1 = "C"
+                            SL_LIBELLE2 = ""
+                            clsParametreAppelApi['SL_LIBELLE1'] = SL_LIBELLE1
+                            clsParams = pvgTraitementSms(
+                                connection,
+                                clsParametreAppelApi['AG_CODEAGENCE'],
+                                clsParametreAppelApi['PV_CODEPOINTVENTE'],
+                                clsParametreAppelApi['CO_CODECOMPTE'],
+                                clsParametreAppelApi['OB_NOMOBJET'],
+                                "2250788635251",#clsParametreAppelApi['CL_CONTACT'],
+                                clsParametreAppelApi['OP_CODEOPERATEUR'],
+                                clsParametreAppelApi['SM_DATEPIECE'],
+                                "",
+                                clsParametreAppelApi['CL_IDCLIENT'],
+                                "",
+                                clsParametreAppelApi['SL_MESSAGECLIENT'],
+                                TE_CODESMSTYPEOPERATION,
+                                "0",
+                                "01/01/1900",
+                                "0",
+                                "0",
+                                "N",
+                                "0",
+                                clsParametreAppelApi['SL_LIBELLE1'],
+                                clsParametreAppelApi['SL_LIBELLE2']
+                            )
 
-                # 1- Exécution de la fonction pvg_comptabilisation_tontine pour la comptabilisation
-                DataSet = pvg_comptabilisation_tontine(connection, clsMouvementcomptable)
+                            clsParametreAppelApis[0]['SL_RESULTATAPI'] = clsParams['SL_RESULTAT']
+                            clsParametreAppelApis[0]['SL_MESSAGEAPI'] = clsParams['SL_MESSAGE']
+                            if clsParams['SL_RESULTAT'] == "FALSE":
+                                clsParametreAppelApis[0]['SL_MESSAGE'] = clsParametreAppelApis[0]['SL_MESSAGE'] + " " + clsParametreAppelApis[0]['SL_MESSAGEAPI']
+                            if clsParams['SL_RESULTAT'] == "TRUE":
+                                clsParametreAppelApis[0]['SL_MESSAGEAPI'] = ""
+
+                            if "@" in clsParametreAppelApis[0]['EJ_EMAILCLIENT']:
+                                smtpServeur = "smtp.gmail.com"
+                                portSmtp = 587
+                                adresseEmail = clsParametreAppelApis[0]['AG_EMAIL']
+                                motDePasse = clsParametreAppelApis[0]['AG_EMAILMOTDEPASSE']
+                                destinataire = 'bolatykouassieuloge@gmail.com'#clsParametreAppelApis[0]['EJ_EMAILCLIENT']
+                                sujet = "Code Validation"
+                                corpsMessage = clsParametreAppelApis[0]['SL_MESSAGECLIENT']
+                                message = MIMEMultipart()
+                                message['From'] = adresseEmail
+                                message['To'] = destinataire
+                                message['Subject'] = sujet
+                                message.attach(MIMEText(corpsMessage, 'plain'))
+                                with smtplib.SMTP(smtpServeur, portSmtp) as server:
+                                    server.starttls()
+                                    server.login(adresseEmail, motDePasse)
+                                    server.sendmail(adresseEmail, destinataire, message.as_string())
+                        """
+                        # 3- Exécution de la fonction pvpGenererMouchard pour l'insertion dans le mouchard DataSet["MC_NUMPIECE"]
+                        pvpGenererMouchard(connection, clsObjetEnvoi, DataSet["MC_NUMPIECE"], "A", sticker_code1,LIBELLEACTION)
+
+                        # 4- Exécution de la fonction pvgBordereau pour obtenir les informations du mouvement comptable
+                        clsMouvementcomptable = DataSet  # pvgBordereau(connection, clsMouvementcomptable['AG_CODEAGENCE'], clsMouvementcomptable['TS_CODETYPESCHEMACOMPTABLE'], clsMouvementcomptable['MC_DATEPIECE'].ToShortDateString(), clsMouvementcomptable['AG_COP_CODEOPERATEURDEAGENCE'])
                 
-                # Vérifier si la première instruction s'est terminée avec succès
-                if DataSet:
-                    listOperation.append(DataSet)
-                    # 2- Exécution de la fonction pvgDecisionEnvoiSMS pour l'envoi ou non du sms
-                    """
-                    vlpEnvoyerSms = pvgDecisionEnvoiSMS(connection, clsMouvementcomptable['AG_CODEAGENCE'])
-                    if vlpEnvoyerSms:
-                        clsParametreAppelApi = {}
-                        clsParametreAppelApi['AG_CODEAGENCE'] = clsMouvementcomptable['AG_CODEAGENCE']
-                        clsParametreAppelApi['PV_CODEPOINTVENTE'] = clsMouvementcomptable['PV_CODEPOINTVENTE']
-                        clsParametreAppelApi['CL_CODECLIENT'] = DataSet["CL_CODECLIENT"]
-                        clsParametreAppelApi['CL_IDCLIENT'] = DataSet["CL_IDCLIENT"]
-                        clsParametreAppelApi['CO_CODECOMPTE'] = clsMouvementcomptable['CO_CODECOMPTE']
-                        clsParametreAppelApi['OB_NOMOBJET'] = "FrmOperationGuichetTiersEpargnantJournalier"
-                        clsParametreAppelApi['CL_CONTACT'] = DataSet["EJ_TELEPHONE"]
-                        clsParametreAppelApi['OP_CODEOPERATEUR'] = clsMouvementcomptable['OP_CODEOPERATEUR']
-                        clsParametreAppelApi['SM_DATEPIECE'] = str(clsMouvementcomptable['MC_DATEPIECE'])
-                        clsParametreAppelApi['SL_MESSAGECLIENT'] = DataSet["SL_MESSAGECLIENT"]
-                        clsParametreAppelApi['SM_NUMSEQUENCE'] = DataSet["SM_NUMSEQUENCERETOURS"]
-                        clsParametreAppelApi['AG_EMAIL'] = DataSet["AG_EMAIL"]
-                        clsParametreAppelApi['AG_EMAILMOTDEPASSE'] = DataSet["AG_EMAILMOTDEPASSE"]
-                        clsParametreAppelApi['SL_MESSAGEOBJET'] = DataSet["SL_MESSAGEOBJET"]
-                        clsParametreAppelApi['EJ_EMAILCLIENT'] = DataSet["EJ_EMAILCLIENT"]
-                        clsParametreAppelApi['SL_LIBELLE1'] = ""
-                        clsParametreAppelApi['SL_LIBELLE2'] = ""
-                        clsParametreAppelApis = [clsParametreAppelApi]
-
-                        TE_CODESMSTYPEOPERATION = "0005"
-                        SL_LIBELLE1 = "C"
-                        SL_LIBELLE2 = ""
-                        clsParametreAppelApi['SL_LIBELLE1'] = SL_LIBELLE1
-                        clsParams = pvgTraitementSms(
-                            connection,
-                            clsParametreAppelApi['AG_CODEAGENCE'],
-                            clsParametreAppelApi['PV_CODEPOINTVENTE'],
-                            clsParametreAppelApi['CO_CODECOMPTE'],
-                            clsParametreAppelApi['OB_NOMOBJET'],
-                            "2250788635251",#clsParametreAppelApi['CL_CONTACT'],
-                            clsParametreAppelApi['OP_CODEOPERATEUR'],
-                            clsParametreAppelApi['SM_DATEPIECE'],
-                            "",
-                            clsParametreAppelApi['CL_IDCLIENT'],
-                            "",
-                            clsParametreAppelApi['SL_MESSAGECLIENT'],
-                            TE_CODESMSTYPEOPERATION,
-                            "0",
-                            "01/01/1900",
-                            "0",
-                            "0",
-                            "N",
-                            "0",
-                            clsParametreAppelApi['SL_LIBELLE1'],
-                            clsParametreAppelApi['SL_LIBELLE2']
-                        )
-
-                        clsParametreAppelApis[0]['SL_RESULTATAPI'] = clsParams['SL_RESULTAT']
-                        clsParametreAppelApis[0]['SL_MESSAGEAPI'] = clsParams['SL_MESSAGE']
-                        if clsParams['SL_RESULTAT'] == "FALSE":
-                            clsParametreAppelApis[0]['SL_MESSAGE'] = clsParametreAppelApis[0]['SL_MESSAGE'] + " " + clsParametreAppelApis[0]['SL_MESSAGEAPI']
-                        if clsParams['SL_RESULTAT'] == "TRUE":
-                            clsParametreAppelApis[0]['SL_MESSAGEAPI'] = ""
-
-                        if "@" in clsParametreAppelApis[0]['EJ_EMAILCLIENT']:
-                            smtpServeur = "smtp.gmail.com"
-                            portSmtp = 587
-                            adresseEmail = clsParametreAppelApis[0]['AG_EMAIL']
-                            motDePasse = clsParametreAppelApis[0]['AG_EMAILMOTDEPASSE']
-                            destinataire = 'bolatykouassieuloge@gmail.com'#clsParametreAppelApis[0]['EJ_EMAILCLIENT']
-                            sujet = "Code Validation"
-                            corpsMessage = clsParametreAppelApis[0]['SL_MESSAGECLIENT']
-                            message = MIMEMultipart()
-                            message['From'] = adresseEmail
-                            message['To'] = destinataire
-                            message['Subject'] = sujet
-                            message.attach(MIMEText(corpsMessage, 'plain'))
-                            with smtplib.SMTP(smtpServeur, portSmtp) as server:
-                                server.starttls()
-                                server.login(adresseEmail, motDePasse)
-                                server.sendmail(adresseEmail, destinataire, message.as_string())
-                    """
-                    # 3- Exécution de la fonction pvpGenererMouchard pour l'insertion dans le mouchard
-                    pvpGenererMouchard(connection, clsObjetEnvoi, DataSet["MC_NUMPIECE"], "A", sticker_code1)
-
-                    # 4- Exécution de la fonction pvgBordereau pour obtenir les informations du mouvement comptable
-                    clsMouvementcomptable = DataSet  # pvgBordereau(connection, clsMouvementcomptable['AG_CODEAGENCE'], clsMouvementcomptable['TS_CODETYPESCHEMACOMPTABLE'], clsMouvementcomptable['MC_DATEPIECE'].ToShortDateString(), clsMouvementcomptable['AG_COP_CODEOPERATEURDEAGENCE'])
-                    
-            # 2- Mise à jour du billetage
-            if clsBilletages is not None:
-                    for idx in range(len(clsBilletages)):
-                        clsBilletages[idx]['AG_CODEAGENCE'] = clsMouvementcomptable['AG_CODEAGENCE']
-                        clsBilletages[idx]['MC_DATEPIECE'] = clsMouvementcomptable['MC_DATEPIECE']
-                        clsBilletages[idx]['BI_NUMPIECE'] = vlpBiNumPiece[0]['MC_NUMPIECE']
-                        clsBilletages[idx]['MC_NUMPIECE'] = clsMouvementcomptable['MC_NUMPIECE']
-                        clsBilletages[idx]['MC_NUMSEQUENCE'] = clsMouvementcomptable['MC_NUMSEQUENCE']
-                        clsBilletages[idx]['PL_CODENUMCOMPTE'] = clsMouvementcomptable['PL_CODENUMCOMPTE']
-                        pvgInsert(connection, clsBilletages[idx])
-            
-            # 3- Ajout du numéro de bordereau à SL_MESSAGEAPI
-                    # Test du lien de l'API SMS
-                    LIENDAPISMS = LIENAPISMS + "Service/wsApisms.svc/SendMessage"
-                    clsMouvementcomptable['NUMEROBORDEREAU'] = clsMouvementcomptable['NUMEROBORDEREAU'] #+ "/" + clsParametreAppelApis[0]['SL_MESSAGEAPI']
-                    Retour = {}
-                    Retour['NUMEROBORDEREAU'] = clsMouvementcomptable['NUMEROBORDEREAU']
-                    Retour['MESSAGEAPI'] = ""#clsParametreAppelApis[0]['SL_MESSAGEAPI']
-                    if not IsValidateIP(LIENDAPISMS):
-                        Retour['MESSAGEAPI']  = "L'API SMS doit être configurée !!!"
-                    Retour['SL_RESULTAT'] = "TRUE"
-                    
-                    # Démarrer le traitement asynchrone dans un thread
-                    if listOperation is not None and Retour['SL_RESULTAT'] == "TRUE":
-                                thread_traitement = threading.Thread(target=traitement_asynchrone, args=(connection, clsMouvementcomptables[0], listOperation))
-                                thread_traitement.daemon = True  # Définir le thread comme démon
-                                thread_traitement.start()
-            # 4- Retourner le numéro de bordereau
-            return Retour #clsMouvementcomptable['NUMEROBORDEREAU']
-
+                vlpNumPiece = pvgNumeroPiece(connection, clsMouvementcomptables[0]['AG_CODEAGENCE'], str(clsMouvementcomptables[0]['MC_DATEPIECE']),clsMouvementcomptables[0]['OP_CODEOPERATEUR'],"MOUVEMENTCOMPTABLE")
+                clsMouvementcomptables[0]['MC_NUMPIECE'] = vlpNumPiece[0]['MC_NUMPIECE']
+                clsMouvementcomptables[0]['MC_REFERENCEPIECE'] = vlpNumPiece[0]['MC_NUMPIECE']
+                DataSet2 = pvg_comptabilisation_tontinePrelevement(connection, clsMouvementcomptables[0])        
+                # 2- Mise à jour du billetage
+                if clsBilletages is not None:
+                        for idx in range(len(clsBilletages)):
+                            clsBilletages[idx]['AG_CODEAGENCE'] = clsMouvementcomptable['AG_CODEAGENCE']
+                            clsBilletages[idx]['MC_DATEPIECE'] = clsMouvementcomptable['MC_DATEPIECE']
+                            clsBilletages[idx]['BI_NUMPIECE'] = vlpBiNumPiece[0]['MC_NUMPIECE']
+                            clsBilletages[idx]['MC_NUMPIECE'] = clsMouvementcomptable['MC_NUMPIECE']#vlpNumPiece[0]['MC_NUMPIECE']
+                            clsBilletages[idx]['MC_NUMSEQUENCE'] = clsMouvementcomptable['MC_NUMSEQUENCE']
+                            clsBilletages[idx]['PL_CODENUMCOMPTE'] = clsMouvementcomptable['PL_CODENUMCOMPTE']
+                            pvgInsert(connection, clsBilletages[idx])
+                
+                # 3- Ajout du numéro de bordereau à SL_MESSAGEAPI
+                        # Test du lien de l'API SMS
+                        LIENDAPISMS = LIENAPISMS + "Service/wsApisms.svc/SendMessage"
+                        clsMouvementcomptable['NUMEROBORDEREAU'] = clsMouvementcomptable['NUMEROBORDEREAU'] #+ "/" + clsParametreAppelApis[0]['SL_MESSAGEAPI']
+                        Retour = {}
+                        Retour['NUMEROBORDEREAU'] = clsMouvementcomptable['NUMEROBORDEREAU']
+                        Retour['MESSAGEAPI'] = ""#clsParametreAppelApis[0]['SL_MESSAGEAPI']
+                        if not IsValidateIP(LIENDAPISMS):
+                            Retour['MESSAGEAPI']  = "L'API SMS doit être configurée !!!"
+                        Retour['SL_RESULTAT'] = "TRUE"
+                        
+                        # Démarrer le traitement asynchrone dans un thread
+                        if listOperation is not None and Retour['SL_RESULTAT'] == "TRUE":
+                                    get_commit(connection,clsMouvementcomptables)
+                                    thread_traitement = threading.Thread(target=traitement_asynchrone, args=(connection, clsMouvementcomptables[0], listOperation))
+                                    thread_traitement.daemon = True  # Définir le thread comme démon
+                                    thread_traitement.start()
+                # 4- Retourner le numéro de bordereau
+                return Retour #clsMouvementcomptable['NUMEROBORDEREAU']
+            else:
+                Retour = {}
+                Retour['SL_MESSAGE'] = 'Opération impossible veuillez revoir la connexion internet'
+                Retour['SL_RESULTAT'] = "FALSE"
+                return Retour
         except Exception as e:
             #connection.execute("ROLLBACK")
             #connection.close()
@@ -1048,13 +1144,13 @@ def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletag
             Retour['SL_RESULTAT'] = "FALSE"
             return Retour
         
-def pvpGenererMouchard(connection,clsObjetEnvoi, vppAction, vppTypeAction,TERMINALIDENTIFIANT):
+def pvpGenererMouchard(connection,clsObjetEnvoi, vppAction, vppTypeAction,TERMINALIDENTIFIANT,MC_LIBELLEOPERATION):
     clsMouchard = {}
     clsMouchard['AG_CODEAGENCE'] = clsObjetEnvoi.OE_A
     clsMouchard['OP_CODEOPERATEUR'] = clsObjetEnvoi.OE_Y
     
     if vppTypeAction == "A":
-        clsMouchard['MO_ACTION'] = "MOUVEMENTCOMPTABLE (Ajout) : " + vppAction
+        clsMouchard['MO_ACTION'] = "MOUVEMENTCOMPTABLE   " + MC_LIBELLEOPERATION + ' : ' + vppAction
     elif vppTypeAction == "M":
         clsMouchard['MO_ACTION'] = "MOUVEMENTCOMPTABLE (Modification) : " + vppAction
     elif vppTypeAction == "S":
@@ -1097,7 +1193,10 @@ def pvpGenererMouchard(connection,clsObjetEnvoi, vppAction, vppTypeAction,TERMIN
         #instruction pour valider la commande de mise à jour
         #connection.commit()
     except Exception as e:
-        MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
+        MYSQL_REPONSE = e.args[1]
+        if "varchar" in MYSQL_REPONSE:
+            MYSQL_REPONSE = MYSQL_REPONSE.split("varchar", 1)[1].split("en type de donn", 1)[0]
+            
         raise Exception(MYSQL_REPONSE)
 
    
@@ -1191,51 +1290,86 @@ def IsNetworkConnected():
         response = requests.get("http://www.google.com", timeout=5)
         return response.status_code == 200
     except requests.ConnectionError:
-        MYSQL_REPONSE = f'Opération impossible veuillez revoir la connexion internet'
-        raise Exception(MYSQL_REPONSE)   
+        MYSQL_REPONSE = 400#f'Opération impossible veuillez revoir la connexion internet'
+        return MYSQL_REPONSE
+        #raise Exception(MYSQL_REPONSE)   
 
 
 def pvgInsert(connection, clsBilletage):
     params = {}
     #return clsSmsouts
-    params = {
-        'AG_CODEAGENCE1': clsBilletage['AG_CODEAGENCE'],
-        'MC_DATEPIECE1': clsBilletage['MC_DATEPIECE'],
-        'BI_NUMPIECE1': clsBilletage['BI_NUMPIECE'],
-        'BI_NUMSEQUENCE1': clsBilletage['BI_NUMSEQUENCE'],
-        'CB_CODECOUPURE1': clsBilletage['CB_CODECOUPURE'],
-        'PL_CODENUMCOMPTE1': clsBilletage['PL_CODENUMCOMPTE'],
-        'MC_NUMPIECE1': clsBilletage['MC_NUMPIECE'],
-        'MC_NUMSEQUENCE1': clsBilletage['MC_NUMSEQUENCE'],
-        'BI_QUANTITESORTIE1': clsBilletage['BI_QUANTITESORTIE'],
-        'BI_QUANTITEENTREE1': clsBilletage['BI_QUANTITEENTREE'],
-        'CODECRYPTAGE1': 'Y}@128eVIXfoi7', 
-        'TYPEOPERATION': clsBilletage['TYPEOPERATION'],
-        
-    }
+    if clsBilletage['PL_CODENUMCOMPTE'] is not None and clsBilletage['PL_CODENUMCOMPTE'] != "":
+        params = {
+            'AG_CODEAGENCE2': clsBilletage['AG_CODEAGENCE'],
+            'MC_DATEPIECE2': clsBilletage['MC_DATEPIECE'],
+            'BI_NUMPIECE2': clsBilletage['BI_NUMPIECE'],
+            'BI_NUMSEQUENCE2': clsBilletage['BI_NUMSEQUENCE'],
+            'CB_CODECOUPURE2': clsBilletage['CB_CODECOUPURE'],
+            'PL_CODENUMCOMPTE2': clsBilletage['PL_CODENUMCOMPTE'],
+            'MC_NUMPIECE2': clsBilletage['MC_NUMPIECE'],
+            'MC_NUMSEQUENCE2': clsBilletage['MC_NUMSEQUENCE'],
+            'BI_QUANTITESORTIE2': clsBilletage['BI_QUANTITESORTIE'],
+            'BI_QUANTITEENTREE2': clsBilletage['BI_QUANTITEENTREE'],
+            'CODECRYPTAGE': 'Y}@128eVIXfoi7', 
+            'TYPEOPERATION': clsBilletage['TYPEOPERATION'],
+            
+        }
 
-     # Récupérer la connexion et le curseur de la base de données depuis cls_donnee
+        # Récupérer la connexion et le curseur de la base de données depuis cls_donnee
+        try:
+            cursor = connection
+        except Exception as e:
+            # En cas d'erreur, annuler la transaction
+            cursor.execute("ROLLBACK")
+            cursor.close()
+            MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
+            raise Exception(MYSQL_REPONSE)
+
+        # Exécution de la procédure stockée
+        try:
+            #connection.commit()
+            cursor.execute("EXECUTE PC_BILLETAGENEW  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?", list(params.values()))
+            #instruction pour valider la commande de mise à jour
+            #connection.commit()
+        except Exception as e:
+            # En cas d'erreur, annuler la transaction
+            cursor.execute("ROLLBACK")
+            cursor.close()
+            MYSQL_REPONSE = e.args[1]
+            if "varchar" in MYSQL_REPONSE:
+               MYSQL_REPONSE = MYSQL_REPONSE.split("varchar", 1)[1].split("en type de donn", 1)[0]
+              
+            raise Exception(MYSQL_REPONSE)
+    else:
+        MYSQL_REPONSE = f'Impossible de récupérer la valeur du PL_CODENUMCOMPTE : ' + clsBilletage['PL_CODENUMCOMPTE']
+        raise Exception(MYSQL_REPONSE)   
+
+def get_commit(connection,clsBilletages):
     try:
+       for row in clsBilletages: 
         cursor = connection
+        params = {
+            'AG_CODEAGENCE3': row['AG_CODEAGENCE'],
+            'MC_DATEPIECE3': row['MC_DATEPIECE']
+        }
+        try:
+            connection.commit()
+            cursor.execute("EXECUTE [PC_COMMIT]  ?, ?", list(params.values()))
+            #instruction pour valider la commande de mise à jour
+            connection.commit()
+        except Exception as e:
+            # En cas d'erreur, annuler la transaction
+            cursor.execute("ROLLBACK")
+            cursor.close()
+            MYSQL_REPONSE = e.args[1]
+            if "varchar" in MYSQL_REPONSE:
+               MYSQL_REPONSE = MYSQL_REPONSE.split("varchar", 1)[1].split("en type de donn", 1)[0]
+               
+            raise Exception(MYSQL_REPONSE)
     except Exception as e:
-        # En cas d'erreur, annuler la transaction
-        cursor.execute("ROLLBACK")
-        cursor.close()
-        MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
+        MYSQL_REPONSE = f'Erreur lors du commit des opérations: {str(e)}'
         raise Exception(MYSQL_REPONSE)
 
-    # Exécution de la procédure stockée
-    try:
-        connection.commit()
-        cursor.execute("EXECUTE PC_BILLETAGE  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?", list(params.values()))
-        #instruction pour valider la commande de mise à jour
-        connection.commit()
-    except Exception as e:
-        # En cas d'erreur, annuler la transaction
-        cursor.execute("ROLLBACK")
-        cursor.close()
-        MYSQL_REPONSE = f'Impossible de récupérer le curseur de la base de données : {str(e.args[1])}'
-        raise Exception(MYSQL_REPONSE)
 def get_ip_address():
     try:
         hostname = socket.gethostname()
@@ -1243,8 +1377,9 @@ def get_ip_address():
         print("Adresse IP locale : " + ip_address)
         return ip_address
     except Exception as e:
-        print("Erreur lors de la récupération de l'adresse IP : " + str(e))
-        return None
+        #print("Erreur lors de la récupération de l'adresse IP : " + str(e))
+        MYSQL_REPONSE = f'Erreur lors de la récupération de l adresse IP : {str(e)}'
+        raise Exception(MYSQL_REPONSE) 
 
 def get_public_ip_address():
     try:
@@ -1253,8 +1388,9 @@ def get_public_ip_address():
         print("Adresse IP publique : " + ip_address)
         return ip_address
     except Exception as e:
-        print("Erreur lors de la récupération de l'adresse IP publique : " + str(e))
-        return None
+        #print("Erreur lors de la récupération de l'adresse IP publique : " + str(e))
+        MYSQL_REPONSE = f'Erreur lors de la récupération de l adresse IP publique : : {str(e)}'
+        raise Exception(MYSQL_REPONSE) 
 
 def get_mac_address():
     try:
@@ -1263,5 +1399,6 @@ def get_mac_address():
         print("Adresse MAC : " + mac_address)
         return mac_address
     except Exception as e:
-        print("Erreur lors de la récupération de l'adresse MAC : " + str(e))
-        return None
+        #print("Erreur lors de la récupération de l'adresse MAC : " + str(e))
+        MYSQL_REPONSE = f'Erreur lors de la récupération de l adresse MAC : {str(e)}'
+        raise Exception(MYSQL_REPONSE)

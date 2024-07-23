@@ -35,8 +35,8 @@ def OperationVersementRetrait():
         clsEtatmouvementacomptabilisers['MC_MONTANTDEBIT'] = row['MC_MONTANTDEBIT']
         clsEtatmouvementacomptabilisers['MC_NOMTIERS'] = row['MC_NOMTIERS']
        # clsEtatmouvementacomptabilisers['EM_NUMEROSEQUENCE'] = row['EM_NUMEROSEQUENCE']
-        clsEtatmouvementacomptabilisers['MC_NUMPIECETIERS'] = row['MC_NUMPIECE']
-        clsEtatmouvementacomptabilisers['MC_REFERENCEPIECE'] = row['MC_REFERENCEPIECE']
+        clsEtatmouvementacomptabilisers['MC_NUMPIECETIERS'] = row['MC_NUMPIECETIERS']#row['MC_NUMPIECE']
+        clsEtatmouvementacomptabilisers['MC_REFERENCEPIECE'] = ""#row['MC_REFERENCEPIECE']
        # clsEtatmouvementacomptabilisers['EM_SCHEMACOMPTABLECODE'] = row['EM_SCHEMACOMPTABLECODE']
         clsEtatmouvementacomptabilisers['MC_SENSBILLETAGE'] = row['MC_SENSBILLETAGE']
         clsEtatmouvementacomptabilisers['TI_IDTIERS'] = row['TI_IDTIERS']
@@ -45,6 +45,7 @@ def OperationVersementRetrait():
         clsEtatmouvementacomptabilisers['PL_CODENUMCOMPTE'] = row['PL_CODENUMCOMPTE']
         clsEtatmouvementacomptabilisers['PV_CODEPOINTVENTE'] = row['PV_CODEPOINTVENTE']
         clsEtatmouvementacomptabilisers['MC_TERMINAL'] = ""
+        clsEtatmouvementacomptabilisers['MC_AUTRE1'] = row['MC_REFERENCEPIECE']
         clsEtatmouvementacomptabilisers['TS_CODETYPESCHEMACOMPTABLE'] = row['TS_CODETYPESCHEMACOMPTABLE']
         clsEtatmouvementacomptabiliserss.append(clsEtatmouvementacomptabilisers)
     

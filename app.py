@@ -46,5 +46,7 @@ def hello():
 app.register_blueprint(api_bp, url_prefix='/api')
 
 if __name__ == '__main__':
+    #from waitress import serve
+    #serve(app, host='192.168.1.124', port=5000)
     app.run(host="0.0.0.0", port=5000,debug=True)
-    #app.run(debug=True)
+    app.run(debug=True)
