@@ -200,7 +200,7 @@ def pvg_comptabilisation_tontine(connection, cls_mouvement_comptable):
         'ALPHA': 'Y}@128eVIXfoi7',
         'MC_TERMINAL': cls_mouvement_comptable['MC_TERMINAL'],
         'MC_AUTRE1': cls_mouvement_comptable['MC_AUTRE1'],
-        'MC_AUTRE2': "",
+        'MC_AUTRE2': cls_mouvement_comptable['MC_AUTRE2'],
         'MC_AUTRE3': ""
     }
 
@@ -1003,11 +1003,16 @@ def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletag
                     # Mettre ensemble les informations de l'ordinateur et les séparer par des @
                     sticker_code1 = ip_address + "@" + public_ip_address + "@" + mac_address
                     clsMouvementcomptable['MC_NUMPIECE'] = vlpNumPiece[0]['MC_NUMPIECE']
+                    clsMouvementcomptable['MC_AUTRE2'] = ''
                     if clsMouvementcomptable['MC_REFERENCEPIECE'] == "":
                         clsMouvementcomptable['MC_REFERENCEPIECE'] = vlpNumPiece[0]['MC_NUMPIECE']
                         clsMouvementcomptable['MC_TERMINAL'] = sticker_code1
                     if clsMouvementcomptable['PI_CODEPIECE'] == "":
                         clsMouvementcomptable['PI_CODEPIECE'] = None
+                    if clsMouvementcomptable['MC_AUTRE1'] == "O":
+                        vlpNumPiecefrais = pvgNumeroPiece(connection, clsMouvementcomptables[0]['AG_CODEAGENCE'], str(clsMouvementcomptables[0]['MC_DATEPIECE']),clsMouvementcomptables[0]['OP_CODEOPERATEUR'],"MOUVEMENTCOMPTABLE")   
+                        clsMouvementcomptable['MC_AUTRE2'] = vlpNumPiecefrais[0]['MC_NUMPIECE'] 
+                    clsMouvementcomptableprelevement = clsMouvementcomptable
                     # 1- Exécution de la fonction pvg_comptabilisation_tontine pour la comptabilisation
                     DataSet = pvg_comptabilisation_tontine(connection, clsMouvementcomptable)
                     
@@ -1096,11 +1101,11 @@ def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletag
 
                         # 4- Exécution de la fonction pvgBordereau pour obtenir les informations du mouvement comptable
                         clsMouvementcomptable = DataSet  # pvgBordereau(connection, clsMouvementcomptable['AG_CODEAGENCE'], clsMouvementcomptable['TS_CODETYPESCHEMACOMPTABLE'], clsMouvementcomptable['MC_DATEPIECE'].ToShortDateString(), clsMouvementcomptable['AG_COP_CODEOPERATEURDEAGENCE'])
-                
-                vlpNumPiece = pvgNumeroPiece(connection, clsMouvementcomptables[0]['AG_CODEAGENCE'], str(clsMouvementcomptables[0]['MC_DATEPIECE']),clsMouvementcomptables[0]['OP_CODEOPERATEUR'],"MOUVEMENTCOMPTABLE")
-                clsMouvementcomptables[0]['MC_NUMPIECE'] = vlpNumPiece[0]['MC_NUMPIECE']
-                clsMouvementcomptables[0]['MC_REFERENCEPIECE'] = vlpNumPiece[0]['MC_NUMPIECE']
-                DataSet2 = pvg_comptabilisation_tontinePrelevement(connection, clsMouvementcomptables[0])        
+                        vlpNumPieces = pvgNumeroPiece(connection, clsMouvementcomptables[0]['AG_CODEAGENCE'], str(clsMouvementcomptables[0]['MC_DATEPIECE']),clsMouvementcomptables[0]['OP_CODEOPERATEUR'],"MOUVEMENTCOMPTABLE")
+                        clsMouvementcomptableprelevement['MC_NUMPIECE'] = vlpNumPieces[0]['MC_NUMPIECE']
+                        clsMouvementcomptableprelevement['MC_REFERENCEPIECE'] = vlpNumPieces[0]['MC_NUMPIECE']
+                        DataSet2 = pvg_comptabilisation_tontinePrelevement(connection, clsMouvementcomptableprelevement)
+                        
                 # 2- Mise à jour du billetage
                 if clsBilletages is not None:
                         for idx in range(len(clsBilletages)):

@@ -1,27 +1,41 @@
 from flask import Flask,jsonify,request,render_template
+from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 from utils import connect_database
+from config import connected_cashiers,socketio
 import logging as logger
 logger.basicConfig(level="DEBUG")
 from routes import api_bp
-
+import os
 app = Flask(__name__)
+socketio = SocketIO(app)
 CORS(app)
 
-# Connexion à la base de données au démarrage de l'application Flask
-#@app.teardown_appcontext
 
-#def connect_to_database(exception):
-    #global db_connection
-    #db_connection = connect_database()
 
-    #if not db_connection:
-        # Si la connexion échoue, vous pouvez prendre des mesures appropriées, par exemple, arrêter l'application
-    #print("Impossible de se connecter à la base de données. Arrêt de l'application.")
-    #    exit(1)
+# Quand une caissière se connecte au WebSocket
+@socketio.on('connect_cashier')
+def handle_connect_cashier(data):
+    cashier_id = data.get('OP_CODEOPERATEUR')
+    if cashier_id:
+        connected_cashiers[cashier_id] = request.sid
+        emit('status', {'message': 'Caissière connectée', 'cashier_id': cashier_id}, broadcast=True)
+
+# Quand une caissière se déconnecte
+@socketio.on('disconnect')
+def handle_disconnect():
+    for cashier_id, sid in list(connected_cashiers.items()):
+        if sid == request.sid:
+            del connected_cashiers[cashier_id]
+            break
 
 # Exemple de route pour tester la connexion à la base de données
+UPLOAD_FOLDER = 'D:/UploadFile'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Assurez-vous que le dossier existe
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 @app.route('/')
 def hello():
     #global db_connection
@@ -48,5 +62,6 @@ app.register_blueprint(api_bp, url_prefix='/api')
 if __name__ == '__main__':
     #from waitress import serve
     #serve(app, host='192.168.1.124', port=5000)
-    app.run(host="0.0.0.0", port=5000,debug=True)
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=6001,debug=True)
+    #socketio.run(app, debug=True)
+    #app.run(debug=True)
