@@ -1114,7 +1114,7 @@ def pvgComptabilisationVersement(connection, clsMouvementcomptables, clsBilletag
                             clsBilletages[idx]['BI_NUMPIECE'] = vlpBiNumPiece[0]['MC_NUMPIECE']
                             clsBilletages[idx]['MC_NUMPIECE'] = clsMouvementcomptable['MC_NUMPIECE']#vlpNumPiece[0]['MC_NUMPIECE']
                             clsBilletages[idx]['MC_NUMSEQUENCE'] = clsMouvementcomptable['MC_NUMSEQUENCE']
-                            clsBilletages[idx]['PL_CODENUMCOMPTE'] = clsMouvementcomptable['PL_CODENUMCOMPTE']
+                            clsBilletages[idx]['PL_CODENUMCOMPTE'] = clsMouvementcomptable['PL_CODENUMCOMPTE'] or clsMouvementcomptableprelevement['PL_CODENUMCOMPTE']
                             pvgInsert(connection, clsBilletages[idx])
                 
                 # 3- Ajout du numéro de bordereau à SL_MESSAGEAPI
@@ -1346,8 +1346,8 @@ def pvgInsert(connection, clsBilletage):
               
             raise Exception(MYSQL_REPONSE)
     else:
-        MYSQL_REPONSE = f'Impossible de récupérer la valeur du PL_CODENUMCOMPTE : ' + clsBilletage['PL_CODENUMCOMPTE']
-        raise Exception(MYSQL_REPONSE)   
+        MYSQL_REPONSE = f"Impossible de récupérer la valeur du PL_CODENUMCOMPTE : {clsBilletage['PL_CODENUMCOMPTE']}"
+        raise Exception(MYSQL_REPONSE)
 
 def get_commit(connection,clsBilletages):
     try:
