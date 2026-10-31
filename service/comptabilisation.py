@@ -472,6 +472,44 @@ def pvgValueScalarRequeteCount(connection, *vppCritere):
         cursor.execute("ROLLBACK")
         MYSQL_REPONSE = str(e.args[1])
         raise Exception(MYSQL_REPONSE)
+    
+# def pvgValueScalarRequeteCount(connection, *vppCritere):
+#     cursor = connection
+#     date_jour = vppCritere[1]
+#     date_journee = datetime.strptime(date_jour, "%d/%m/%Y")
+#     if len(vppCritere) == 3:
+#         vapCritere = " WHERE AG_CODEAGENCE=? AND JT_DATEJOURNEETRAVAIL=? AND JT_STATUT=?"
+#         vapNomParametre = ('@AG_CODEAGENCE','@JT_DATEJOURNEETRAVAIL','@JT_STATUT')
+#         vapValeurParametre = (vppCritere[0],date_journee,vppCritere[2])
+#     else:
+#         vapCritere = ""
+#         vapNomParametre = ()
+#         vapValeurParametre = ()
+
+#     vapRequete = f"SELECT COUNT(JT_DATEJOURNEETRAVAIL) AS JT_DATEJOURNEETRAVAIL  FROM JOURNEETRAVAIL {vapCritere}"
+#     try:
+#         cursor.execute(vapRequete, vapValeurParametre)
+#     except Exception as e:
+#         cursor.close()
+#         cursor.execute("ROLLBACK")
+#         MYSQL_REPONSE = f'Impossible d\'exécuter la procédure stockée : {str(e.args[1])}'
+#         raise Exception(MYSQL_REPONSE)
+    
+#     try:
+#         rows = cursor.fetchall()
+
+#         RetourSelect = {}
+
+#         for row in rows:
+#             RetourSelect['STATUT'] = row[0]
+            
+#         # Retourne l'objet
+#         return RetourSelect['STATUT']
+#     except Exception as e:
+#         cursor.close()
+#         cursor.execute("ROLLBACK")
+#         MYSQL_REPONSE = str(e.args[1])
+#         raise Exception(MYSQL_REPONSE)
 
     
 def pvgTableLabelAgence(connection, *vppCritere):

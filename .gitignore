@@ -79,3 +79,8 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+/.vscode
+config.py
+server_debug.log
+server_run.log
+utils.py
